@@ -27,10 +27,19 @@ public:
   Sensor *pressure_sensor = new Sensor();
   Sensor *modulation_sensor = new Sensor();
   Sensor *heating_target_temperature_sensor = new Sensor();
+  Sensor *error_sensor = new Sensor();
   OpenthermClimate *hotWaterClimate = new OpenthermClimate();
   OpenthermClimate *heatingWaterClimate = new OpenthermClimate();
   BinarySensor *flame = new OpenthermBinarySensor();
-  
+  BinarySensor *fault = new OpenthermBinarySensor();
+  BinarySensor *diagnostic = new OpenthermBinarySensor();
+  BinarySensor *service_required = new OpenthermBinarySensor();
+  BinarySensor *lockout_reset = new OpenthermBinarySensor();
+  BinarySensor *low_water_pressure = new OpenthermBinarySensor();
+  BinarySensor *gas_fault = new OpenthermBinarySensor();
+  BinarySensor *air_fault = new OpenthermBinarySensor();
+  BinarySensor *water_overtemp = new OpenthermBinarySensor();
+
   // Set 3 sec. to give time to read all sensors (and not appear in HA as not available)
   OpenthermComponent(): PollingComponent(3000) {
   }
@@ -42,7 +51,25 @@ public:
     // This will be called once to set up the component
     // think of it as the setup() call in Arduino
       ESP_LOGD("opentherm_component", "Setup");
-
+      
+      unsigned long request3 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::SConfigSMemberIDcode, 0xFFFF);
+      unsigned long respons3 = ot.sendRequest(request3);
+      uint8_t SlaveMemberIDcode = respons3 >> 0 & 0xFF;
+      ESP_LOGD ("opentherm_component", "SConfigSMemberIDcode %X", request3 );
+   
+      
+      unsigned long request2 = ot.buildRequest(OpenThermRequestType::WRITE, OpenThermMessageID::MConfigMMemberIDcode, SlaveMemberIDcode);
+      unsigned long respons2 = ot.sendRequest(request2);
+      ESP_LOGD ("opentherm_component", "MConfigMMemberIDcode %X",  request2 ); 
+      
+      unsigned long request127 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::SlaveVersion, 0);
+      ESP_LOGD ("opentherm_component", "SlaveVersion %X",  request127 ); 
+      
+      unsigned long request126 = ot.buildRequest(OpenThermRequestType::WRITE, OpenThermMessageID::MasterVersion, 0x013F);
+      unsigned long respons126 = ot.sendRequest(request126);
+      ESP_LOGD ("opentherm_component", "MasterVersion %X",  request126 ); 
+      
+      
       ot.begin(handleInterrupt);
 
       thermostatSwitch->add_on_state_callback([=](bool state) -> void {
@@ -50,8 +77,8 @@ public:
       });
 
       // Adjust HeatingWaterClimate depending on PID
-      // heatingWaterClimate->set_supports_heat_cool_mode(this->pid_output_ != nullptr);
-      heatingWaterClimate->set_supports_two_point_target_temperature(this->pid_output_ != nullptr);
+      heatingWaterClimate->set_supports_heat_cool_mode(this->pid_output_ != nullptr);
+      // heatingWaterClimate->set_supports_two_point_target_temperature(this->pid_output_ != nullptr);
 
       hotWaterClimate->set_temperature_settings(5, 6, 0);
       heatingWaterClimate->set_temperature_settings(0, 0, 30);
@@ -90,6 +117,9 @@ public:
     return ot.isValidResponse(response) ? ot.getFloat(response) : -1;
   }
 
+ 
+ 
+    
   void update() override {
 
     ESP_LOGD("opentherm_component", "update heatingWaterClimate: %i", heatingWaterClimate->mode);
@@ -103,11 +133,13 @@ public:
     //Set/Get Boiler Status
     auto response = ot.setBoilerStatus(enableCentralHeating, enableHotWater, enableCooling);
     bool isFlameOn = ot.isFlameOn(response);
+    bool isFault = ot.isFault(response);
+    bool isDiagnostic = ot.isDiagnostic(response);
     bool isCentralHeatingActive = ot.isCentralHeatingActive(response);
     bool isHotWaterActive = ot.isHotWaterActive(response);
     float return_temperature = getReturnTemperature();
     float hotWater_temperature = getHotWaterTemperature();
-
+    unsigned char isError = ot.getFault();
 
     // Set temperature depending on room thermostat
     float heating_target_temperature;
@@ -139,14 +171,21 @@ public:
     float ext_temperature = getExternalTemperature();
     float pressure = getPressure();
     float modulation = getModulation();
+  
 
     // Publish sensor values
     flame->publish_state(isFlameOn); 
+    fault->publish_state(isFault);
+    diagnostic->publish_state(isDiagnostic);
     external_temperature_sensor->publish_state(ext_temperature);
     return_temperature_sensor->publish_state(return_temperature);
     boiler_temperature->publish_state(boilerTemperature);
     pressure_sensor->publish_state(pressure);
     modulation_sensor->publish_state(modulation);
+    error_sensor->publish_state(isError); 
+
+
+
     
     heating_target_temperature_sensor->publish_state(heating_target_temperature);
 
