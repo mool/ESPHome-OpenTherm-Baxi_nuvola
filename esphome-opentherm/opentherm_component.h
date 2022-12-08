@@ -6,9 +6,17 @@
 #include "opentherm_binary.h"
 #include "opentherm_output.h"
 
+      
 // Pins to OpenTherm Adapter
 int inPin = D2; 
 int outPin = D1;
+bool isDhw_present;
+bool isControl_type;
+bool isCooling_present;
+bool isDhw_tank_present;
+bool isPump_control_present;
+bool isCh2_present;
+
 OpenTherm ot(inPin, outPin, false);
 
 ICACHE_RAM_ATTR void handleInterrupt() {
@@ -212,6 +220,13 @@ public:
     gas_fault->publish_state(isGas_fault); 
     air_fault->publish_state(isAir_fault);
     water_overtemp->publish_state(isWater_overtemp);
+    
+    dhw_present->publish_state(isDhw_present); 
+    control_type->publish_state(isControl_type);
+    cooling_present->publish_state(isCooling_present);
+    dhw_tank_present->publish_state(isDhw_tank_present); 
+    pump_control_present->publish_state(isPump_control_present);
+    ch2_present->publish_state(isCh2_present);
     
     external_temperature_sensor->publish_state(ext_temperature);
     return_temperature_sensor->publish_state(return_temperature);
