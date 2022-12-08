@@ -33,12 +33,21 @@ public:
   BinarySensor *flame = new OpenthermBinarySensor();
   BinarySensor *fault = new OpenthermBinarySensor();
   BinarySensor *diagnostic = new OpenthermBinarySensor();
+  
   BinarySensor *service_required = new OpenthermBinarySensor();
   BinarySensor *lockout_reset = new OpenthermBinarySensor();
   BinarySensor *low_water_pressure = new OpenthermBinarySensor();
   BinarySensor *gas_fault = new OpenthermBinarySensor();
   BinarySensor *air_fault = new OpenthermBinarySensor();
   BinarySensor *water_overtemp = new OpenthermBinarySensor();
+  
+  BinarySensor *dhw_present = new OpenthermBinarySensor();
+  BinarySensor *control_type = new OpenthermBinarySensor();
+  BinarySensor *cooling_present = new OpenthermBinarySensor();
+  BinarySensor *dhw_tank_present = new OpenthermBinarySensor();
+  BinarySensor *pump_control_present = new OpenthermBinarySensor();
+  BinarySensor *ch2_present = new OpenthermBinarySensor();
+
 
   // Set 3 sec. to give time to read all sensors (and not appear in HA as not available)
   OpenthermComponent(): PollingComponent(3000) {
@@ -55,9 +64,17 @@ public:
       unsigned long request3 = ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::SConfigSMemberIDcode, 0xFFFF);
       unsigned long respons3 = ot.sendRequest(request3);
       uint8_t SlaveMemberIDcode = respons3 >> 0 & 0xFF;
+      uint8_t flags = (respons3 & 0xFFFF) >> 8 & 0xFF;
+      
+      bool isDhw_present = flags & 0x01;
+      bool isControl_type = flags & 0x02;
+      bool isCooling_present = flags & 0x04;
+      bool isDhw_tank_present = flags & 0x08;
+      bool isPump_control_present = flags & 0x10;
+      bool isCh2_present = flags & 0x20;
+      
       ESP_LOGD ("opentherm_component", "SConfigSMemberIDcode %X", request3 );
    
-      
       unsigned long request2 = ot.buildRequest(OpenThermRequestType::WRITE, OpenThermMessageID::MConfigMMemberIDcode, SlaveMemberIDcode);
       unsigned long respons2 = ot.sendRequest(request2);
       ESP_LOGD ("opentherm_component", "MConfigMMemberIDcode %X",  request2 ); 
@@ -68,7 +85,6 @@ public:
       unsigned long request126 = ot.buildRequest(OpenThermRequestType::WRITE, OpenThermMessageID::MasterVersion, 0x013F);
       unsigned long respons126 = ot.sendRequest(request126);
       ESP_LOGD ("opentherm_component", "MasterVersion %X",  request126 ); 
-      
       
       ot.begin(handleInterrupt);
 
@@ -116,15 +132,18 @@ public:
     unsigned long response = ot.sendRequest(ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::CHPressure, 0));
     return ot.isValidResponse(response) ? ot.getFloat(response) : -1;
   }
-
- 
+  int getASFflags() {
+    unsigned long response = ot.sendRequest(ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::ASFflags, 0));
+    return ot.isValidResponse(response) ? ot.getFloat(response) : -1;
+    uint8_t getASFflags = (response & 0xFFFF) >> 8 & 0xFF;
+  }
  
     
   void update() override {
 
     ESP_LOGD("opentherm_component", "update heatingWaterClimate: %i", heatingWaterClimate->mode);
     ESP_LOGD("opentherm_component", "update hotWaterClimate: %i", hotWaterClimate->mode);
-    
+
     bool enableCentralHeating = heatingWaterClimate->mode == ClimateMode::CLIMATE_MODE_HEAT;
     bool enableHotWater = hotWaterClimate->mode == ClimateMode::CLIMATE_MODE_HEAT;
     bool enableCooling = false; // this boiler is for heating only
@@ -137,6 +156,15 @@ public:
     bool isDiagnostic = ot.isDiagnostic(response);
     bool isCentralHeatingActive = ot.isCentralHeatingActive(response);
     bool isHotWaterActive = ot.isHotWaterActive(response);
+    
+    int ASFflags = getASFflags();
+    bool isService_required = ASFflags & 0x01;
+    bool isLockout_reset = ASFflags & 0x02;
+    bool isLow_water_pressure = ASFflags & 0x04;
+    bool isGas_fault = ASFflags & 0x08;
+    bool isAir_fault = ASFflags & 0x10;
+    bool isWater_overtemp = ASFflags & 0x20;
+    
     float return_temperature = getReturnTemperature();
     float hotWater_temperature = getHotWaterTemperature();
     unsigned char isError = ot.getFault();
@@ -177,6 +205,14 @@ public:
     flame->publish_state(isFlameOn); 
     fault->publish_state(isFault);
     diagnostic->publish_state(isDiagnostic);
+    
+    service_required->publish_state(isService_required); 
+    lockout_reset->publish_state(isLockout_reset);
+    low_water_pressure->publish_state(isLow_water_pressure);
+    gas_fault->publish_state(isGas_fault); 
+    air_fault->publish_state(isAir_fault);
+    water_overtemp->publish_state(isWater_overtemp);
+    
     external_temperature_sensor->publish_state(ext_temperature);
     return_temperature_sensor->publish_state(return_temperature);
     boiler_temperature->publish_state(boilerTemperature);
@@ -185,8 +221,6 @@ public:
     error_sensor->publish_state(isError); 
 
 
-
-    
     heating_target_temperature_sensor->publish_state(heating_target_temperature);
 
     // Publish status of thermostat that controls hot water
