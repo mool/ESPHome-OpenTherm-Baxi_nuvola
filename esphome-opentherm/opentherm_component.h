@@ -35,8 +35,8 @@ public:
   BinarySensor *fault = new OpenthermBinarySensor(); 
   
   
-  // Set 3 sec. to give time to read all sensors (and not appear in HA as not available)
-  OpenthermComponent(): PollingComponent(3000) {
+  // Set 5 sec. to give time to read all sensors (and not appear in HA as not available)
+  OpenthermComponent(): PollingComponent(5000) {
   }
 
   void set_pid_output(OpenthermFloatOutput *pid_output) { pid_output_ = pid_output; }
