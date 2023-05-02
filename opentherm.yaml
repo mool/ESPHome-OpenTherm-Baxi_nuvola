@@ -54,6 +54,7 @@ sensor:
         openthermComp->external_temperature_sensor, 
         openthermComp->return_temperature_sensor, 
         openthermComp->pressure_sensor,
+        openthermComp->Efault_sensor,
         openthermComp->modulation_sensor,
         openthermComp->heating_target_temperature_sensor
       };
@@ -70,6 +71,8 @@ sensor:
     - name: "Heating Water Pressure"
       unit_of_measurement: hPa
       accuracy_decimals: 1
+    - name: "Error"
+      accuracy_decimals: 0    
     - name: "Boiler Modulation"
       unit_of_measurement: "%"
       accuracy_decimals: 0
@@ -79,7 +82,7 @@ sensor:
       
   - platform: homeassistant
     id: temperature_sensor
-    entity_id: sensor.temperature_sensor
+    entity_id: sensor.kitchen_t
     name: "Actual temperature"
     unit_of_measurement: °C
   - platform: template
@@ -102,9 +105,15 @@ binary_sensor:
   - platform: custom
     lambda: |-
       OpenthermComponent *openthermComp = (OpenthermComponent*) id(opentherm);
-      return {openthermComp->flame};
+      return {
+        openthermComp->flame,
+        openthermComp->diagnostic,
+        openthermComp->fault
+      };
     binary_sensors:
     - name: "Flame"
+    - name: "Diagnostic"
+    - name: "Fault"
       #device_class: heat
 
 switch:
@@ -143,6 +152,6 @@ climate:
     default_target_temperature: 20°C
     heat_output: pid_output
     control_parameters:
-      kp: 0.38197
-      ki: 0.01012
-      kd: 3.60387
+      kp: 0.0
+      ki: 0.0
+      kd: 0.0
