@@ -170,6 +170,8 @@ public:
     float getDHWTemperature();
     float getModulation();
     float getPressure();
+    float getExternalTemperature();
+    float getHotWaterTemperature();
     unsigned char getFault();
     unsigned char getEFault();
 
