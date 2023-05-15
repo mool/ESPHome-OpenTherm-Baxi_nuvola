@@ -154,12 +154,12 @@ public:
 	float getFloat(const unsigned long response) const;	
 	unsigned int temperatureToData(float temperature);
 	//ASFflag error
-        bool isService_required(unsigned long response);
-        bool isLockout_reset(unsigned long response);
-        bool isLow_water_pressure(unsigned long response);
-        bool isGas_fault(unsigned long response);
-        bool isAir_fault(unsigned long response);
-        bool isWater_overtemp(unsigned long response);
+        bool isService_required(unsigned char getFault);
+        bool isLockout_reset(unsigned char getFault);
+        bool isLow_water_pressure(unsigned char getFault);
+        bool isGas_fault(unsigned char getFault);
+        bool isAir_fault(unsigned char getFault);
+        bool isWater_overtemp(unsigned char getFault);
 	
 	//basic requests
 	unsigned long setBoilerStatus(bool enableCentralHeating = true, bool enableHotWater = true, bool enableCooling = false, bool enableOutsideTemperatureCompensation = false, bool enableCentralHeating2 = true);
