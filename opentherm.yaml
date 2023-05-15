@@ -142,59 +142,7 @@ climate:
       kp: 0.0
       ki: 0.0
       kd: 0.0
-  - platform: template
-    name: "erorr boiler"
-    lambda: |-
-      if (id(error).state == 1) {
-        return {"E01 Блокировка розжига"};
-      } else {
-       if (id(error).state == 2) {
-        return  {"E02 Вмешательство защитного термостата"};
-      } else {
-       if (id(error).state == 3) {
-        return {"E03 Вмешательство датчика тяги (пневмореле) / термостата"};
-      } else {
-       if (id(error).state == 5) {
-        return {"E05 Неисправность датчика NTC подачи отопления"};
-      } else {  
-       if (id(error).state == 6) {
-        return {"E06 Неисправность датчика контура ГВС"};
-      } else {
-       if (id(error).state == 10) {
-        return {"E10 Отсутствует разрешение от гидравлического прессостата"};
-      } else {
-      if (id(error).state == 11) {
-        return {"E11 Неисправность открытия входа внешнего программируемого датчика температуры (= 04)"};
-      } else {
-      if (id(error).state == 12) {
-        return {"E12 Нет разрешения от дифференциального датчика гидравлического давления (прессостата)"};
-      } else {
-      if (id(error).state == 13) {
-        return {"E13 Залипание контактов дифференциального гидравлического прессостата"};
-      } else {
-      if (id(error).state == 18) {
-        return {"E18 Включено заполнение системы (замечание)"};
-      } else {
-      if (id(error).state == 19) {
-        return {"E19 Неисправность при заполнения системы"};
-      } else {
-      if (id(error).state == 18) {
-        return {"E18 Включено заполнение системы (замечание)"};
-      } else {
-      if (id(error).state == 25) {
-        return {"E25 Вмешательство защиты из-за отсутствия циркуляции воды"};
-      } else {
-      if (id(error).state == 35) {
-        return {"E35 Паразитное пламя (ошибка пламени)"};
-      } else {
-      if (id(error).state == 98) {
-        return {"E98 ВПроблема с контактами реле газового клапана, внутренняя ошибка"};
-      } else {
-      if (id(error).state == 99) {
-        return {"E99 Проблема котактов реле, внутренняя ошибка"};
-      } else {
-       return {"Ошибок нет"} ;}}}}}}}}}}}}}}}}
-    update_interval: 60s
+
     
 web_server:
   port: 80
