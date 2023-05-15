@@ -345,6 +345,25 @@ bool OpenTherm::isCoolingActive(unsigned long response) {
 bool OpenTherm::isDiagnostic(unsigned long response) {
 	return response & 0x40;
 }
+//ASFflag error
+bool OpenTherm::isService_required(unsigned long response) {
+	return response & 0x01;
+}
+bool OpenTherm::isLockout_reset(unsigned long response) {
+	return response & 0x02;
+}
+bool OpenTherm::isLow_water_pressure(unsigned long response) {
+	return response & 0x04;
+}
+bool OpenTherm::isGas_fault(unsigned long response) {
+	return response & 0x08;
+}  
+bool OpenTherm::isAir_fault(unsigned long response) {
+	return response & 0x10;
+} 
+bool OpenTherm::isWater_overtemp(unsigned long response) {
+	return response & 0x20;
+}
 
 uint16_t OpenTherm::getUInt(const unsigned long response) const {
 	const uint16_t u88 = response & 0xffff;
