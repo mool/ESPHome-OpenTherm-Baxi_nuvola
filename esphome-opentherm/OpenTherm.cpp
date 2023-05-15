@@ -346,22 +346,22 @@ bool OpenTherm::isDiagnostic(unsigned long response) {
 	return response & 0x40;
 }
 //ASFflag error
-bool OpenTherm::isService_required(unsigned long response) {
+bool OpenTherm::isService_required(char Fault) {
 	return response & 0x01;
 }
-bool OpenTherm::isLockout_reset(unsigned long response) {
+bool OpenTherm::isLockout_reset(char Fault) {
 	return response & 0x02;
 }
-bool OpenTherm::isLow_water_pressure(unsigned long response) {
+bool OpenTherm::isLow_water_pressure(char Fault) {
 	return response & 0x04;
 }
-bool OpenTherm::isGas_fault(unsigned long response) {
+bool OpenTherm::isGas_fault(char Fault) {
 	return response & 0x08;
 }  
-bool OpenTherm::isAir_fault(unsigned long response) {
+bool OpenTherm::isAir_fault(char Fault) {
 	return response & 0x10;
 } 
-bool OpenTherm::isWater_overtemp(unsigned long response) {
+bool OpenTherm::isWater_overtemp(char Fault) {
 	return response & 0x20;
 }
 
