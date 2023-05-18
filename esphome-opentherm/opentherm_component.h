@@ -7,8 +7,8 @@
 #include "opentherm_output.h"
 
 // Pins to OpenTherm Adapter
-int inPin = D2; 
-int outPin = D1;
+int inPin = 21;
+int outPin = 22;
 OpenTherm ot(inPin, outPin, false);
 
 IRAM_ATTR void handleInterrupt() {
@@ -18,20 +18,20 @@ IRAM_ATTR void handleInterrupt() {
 class OpenthermComponent: public PollingComponent {
 private:
   const char *TAG = "opentherm_component";
-  OpenthermFloatOutput *pid_output_; 
+  OpenthermFloatOutput *pid_output_;
 public:
   Switch *thermostatSwitch = new OpenthermSwitch();
   Sensor *external_temperature_sensor = new Sensor();
   Sensor *boiler_temperature = new Sensor();
   Sensor *modulation_sensor = new Sensor();
   Sensor *heating_target_temperature_sensor = new Sensor();
-  Sensor *Efault_sensor = new Sensor(); 
+  Sensor *Efault_sensor = new Sensor();
   OpenthermClimate *hotWaterClimate = new OpenthermClimate();
   OpenthermClimate *heatingWaterClimate = new OpenthermClimate();
   BinarySensor *flame = new OpenthermBinarySensor();
   BinarySensor *diagnostic = new OpenthermBinarySensor();
-  BinarySensor *fault = new OpenthermBinarySensor(); 
-  
+  BinarySensor *fault = new OpenthermBinarySensor();
+
   // Set 3 sec. to give time to read all sensors (and not appear in HA as not available)
   OpenthermComponent(): PollingComponent(5000) {
   }
@@ -47,7 +47,7 @@ public:
       ot.begin(handleInterrupt);
 
       thermostatSwitch->add_on_state_callback([=](bool state) -> void {
-        ESP_LOGD ("opentherm_component", "termostatSwitch_on_state_callback %d", state);    
+        ESP_LOGD ("opentherm_component", "termostatSwitch_on_state_callback %d", state);
       });
 
       // Adjust HeatingWaterClimate depending on PID
@@ -59,17 +59,17 @@ public:
       hotWaterClimate->setup();
       heatingWaterClimate->setup();
   }
-  
- 
-  
-  
+
+
+
+
   float getExternalTemperature() {
       unsigned long response = ot.sendRequest(ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Toutside, 0));
       return ot.isValidResponse(response) ? ot.getFloat(response) : -1;
   }
 
-  
-  
+
+
   float getHotWaterTemperature() {
       unsigned long response = ot.sendRequest(ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Tdhw, 0));
       return ot.isValidResponse(response) ? ot.getFloat(response) : -1;
@@ -87,16 +87,16 @@ public:
 
   void update() override {
 
-    
+
     ESP_LOGD("opentherm_component", "update heatingWaterClimate: %i", heatingWaterClimate->mode);
     ESP_LOGD("opentherm_component", "update hotWaterClimate: %i", hotWaterClimate->mode);
-    
+
     bool enableCentralHeating = heatingWaterClimate->mode == ClimateMode::CLIMATE_MODE_HEAT;
     bool enableHotWater = hotWaterClimate->mode == ClimateMode::CLIMATE_MODE_HEAT;
     bool enableCentralHeating2 = hotWaterClimate->mode == ClimateMode::CLIMATE_MODE_HEAT;
     bool enableCooling = false; // this boiler is for heating only
 
-    
+
     //Set/Get Boiler Status
     auto response = ot.setBoilerStatus(enableCentralHeating, enableHotWater, enableCooling);
     bool isFlameOn = ot.isFlameOn(response);
@@ -105,7 +105,7 @@ public:
     bool isCentralHeatingActive = ot.isCentralHeatingActive(response);
     bool isHotWaterActive = ot.isHotWaterActive(response);
     bool isCentralHeating2 = ot.isCentralHeating2Active(response);
-    
+
 
     float hotWater_temperature = getHotWaterTemperature();
 
@@ -118,8 +118,8 @@ public:
         heating_target_temperature = 0.0f;
       }
       else {
-        heating_target_temperature =  pid_output * (heatingWaterClimate->target_temperature_high - heatingWaterClimate->target_temperature_low) 
-        + heatingWaterClimate->target_temperature_low;      
+        heating_target_temperature =  pid_output * (heatingWaterClimate->target_temperature_high - heatingWaterClimate->target_temperature_low)
+        + heatingWaterClimate->target_temperature_low;
       }
       ESP_LOGD("opentherm_component", "setBoilerTemperature  at %f °C (from PID Output)", heating_target_temperature);
     }
@@ -144,19 +144,19 @@ public:
     // Publish sensor values
     flame->publish_state(isFlameOn);
     diagnostic->publish_state(isDiagnostic);
-    fault->publish_state(isFault); 
+    fault->publish_state(isFault);
     external_temperature_sensor->publish_state(ext_temperature);
     boiler_temperature->publish_state(boilerTemperature);
     Efault_sensor->publish_state(Efault);
     modulation_sensor->publish_state(modulation);
-    
+
     heating_target_temperature_sensor->publish_state(heating_target_temperature);
 
     // Publish status of thermostat that controls hot water
     hotWaterClimate->current_temperature = hotWater_temperature;
     hotWaterClimate->action = isHotWaterActive ? ClimateAction::CLIMATE_ACTION_HEATING : ClimateAction::CLIMATE_ACTION_OFF;
     hotWaterClimate->publish_state();
-    
+
     // Publish status of thermostat that controls heating
     heatingWaterClimate->current_temperature = boilerTemperature;
     heatingWaterClimate->action = isCentralHeatingActive && isFlameOn ? ClimateAction::CLIMATE_ACTION_HEATING : ClimateAction::CLIMATE_ACTION_OFF;

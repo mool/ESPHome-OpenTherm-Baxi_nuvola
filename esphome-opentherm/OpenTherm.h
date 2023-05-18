@@ -151,7 +151,7 @@ public:
 	bool isCoolingActive(unsigned long response);
 	bool isDiagnostic(unsigned long response);
 	uint16_t getUInt(const unsigned long response) const;
-	float getFloat(const unsigned long response) const;	
+	float getFloat(const unsigned long response) const;
 	unsigned int temperatureToData(float temperature);
 	//ASFflag error
         bool isService_required(char Fault);
@@ -160,7 +160,7 @@ public:
         bool isGas_fault(char Fault);
         bool isAir_fault(char Fault);
         bool isWater_overtemp(char Fault);
-	
+
 	//basic requests
 	unsigned long setBoilerStatus(bool enableCentralHeating = true, bool enableHotWater = true, bool enableCooling = false, bool enableOutsideTemperatureCompensation = false, bool enableCentralHeating2 = true);
 	bool setBoilerTemperature(float temperature);
@@ -172,8 +172,8 @@ public:
     float getPressure();
     float getExternalTemperature();
     float getHotWaterTemperature();
-    unsigned char getFault();
-    unsigned char getEFault();
+    char getFault(char Fault);
+    char getEFault();
 
 private:
 	const int inPin;

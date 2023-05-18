@@ -357,10 +357,10 @@ bool OpenTherm::isLow_water_pressure(char Fault) {
 }
 bool OpenTherm::isGas_fault(char Fault) {
 	return response & 0x08;
-}  
+}
 bool OpenTherm::isAir_fault(char Fault) {
 	return response & 0x10;
-} 
+}
 bool OpenTherm::isWater_overtemp(char Fault) {
 	return response & 0x20;
 }
@@ -409,7 +409,7 @@ bool OpenTherm::setDHWSetpoint(float temperature) {
     unsigned long response = sendRequest(buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::TdhwSet, data));
     return isValidResponse(response);
 }
-    
+
 float OpenTherm::getDHWTemperature() {
     unsigned long response = sendRequest(buildRequest(OpenThermMessageType::READ_DATA, OpenThermMessageID::Tdhw, 0));
     return isValidResponse(response) ? getFloat(response) : 0;
@@ -424,19 +424,21 @@ float OpenTherm::getPressure() {
     unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::CHPressure, 0));
     return isValidResponse(response) ? getFloat(response) : 0;
 }
-float getExternalTemperature() {
-    unsigned long response = ot.sendRequest(ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Toutside, 0));
-    return ot.isValidResponse(response) ? ot.getFloat(response) : 0;
+
+float OpenTherm::getExternalTemperature() {
+    unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Toutside, 0));
+    return isValidResponse(response) ?getFloat(response) : 0;
   }
 
-float getHotWaterTemperature() {
-    unsigned long response = ot.sendRequest(ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Tdhw, 0));
-    return ot.isValidResponse(response) ? ot.getFloat(response) : 0;
+float OpenTherm::getHotWaterTemperature() {
+    unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Tdhw, 0));
+    return isValidResponse(response) ? getFloat(response) : 0;
   }
 
-unsigned char OpenTherm::getFault(char Fault) {
+char OpenTherm::getFault(char Fault) {
     return ((sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::ASFflags, 0)) >> 8) & 0xff);
 }
-unsigned char OpenTherm::getEFault() {
+
+char OpenTherm::getEFault() {
     return (sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::ASFflags, 0))  & 0xff);
 }
