@@ -112,7 +112,11 @@ public:
 
     // Set temperature depending on room thermostat
     float heating_target_temperature;
-    if (this->pid_output_ != nullptr) {
+    if (thermostatSwitch->state) {
+      heating_target_temperature = heatingWaterClimate->target_temperature;
+      ESP_LOGD("opentherm_component", "setBoilerTemperature  at %f °C (from heating water climate)", heating_target_temperature);
+    }
+    else if (this->pid_output_ != nullptr) {
       float pid_output = pid_output_->get_state();
       if (pid_output == 0.0f) {
         heating_target_temperature = 0.0f;
@@ -122,10 +126,6 @@ public:
         + heatingWaterClimate->target_temperature_low;
       }
       ESP_LOGD("opentherm_component", "setBoilerTemperature  at %f °C (from PID Output)", heating_target_temperature);
-    }
-    else if (thermostatSwitch->state) {
-      heating_target_temperature = heatingWaterClimate->target_temperature;
-      ESP_LOGD("opentherm_component", "setBoilerTemperature  at %f °C (from heating water climate)", heating_target_temperature);
     }
     else {
       heating_target_temperature = 0.0;
