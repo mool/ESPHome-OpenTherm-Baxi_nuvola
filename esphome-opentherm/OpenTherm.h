@@ -172,8 +172,8 @@ public:
     float getPressure();
     float getExternalTemperature();
     float getHotWaterTemperature();
-    char getFault(char Fault);
-    char getEFault();
+    unsigned char getFault(char Fault);
+    unsigned char getEFault();
 
 private:
 	const int inPin;

@@ -435,10 +435,10 @@ float OpenTherm::getHotWaterTemperature() {
     return isValidResponse(response) ? getFloat(response) : 0;
   }
 
-char OpenTherm::getFault(char Fault) {
+unsigned char OpenTherm::getFault(char Fault) {
     return ((sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::ASFflags, 0)) >> 8) & 0xff);
 }
 
-char OpenTherm::getEFault() {
+unsigned char OpenTherm::getEFault() {
     return (sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::ASFflags, 0))  & 0xff);
 }
