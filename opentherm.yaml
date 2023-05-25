@@ -53,6 +53,7 @@ sensor:
         openthermComp->external_temperature_sensor,
         openthermComp->Efault_sensor,
         openthermComp->modulation_sensor,
+        openthermComp->pressure_sensor,
         openthermComp->heating_target_temperature_sensor
       };
     sensors:
@@ -70,6 +71,9 @@ sensor:
     - name: "Boiler Modulation"
       unit_of_measurement: "%"
       accuracy_decimals: 0
+    - name: "Heating Water Pressure"
+      unit_of_measurement: hPa
+      accuracy_decimals: 1
     - name: "Heating Target Temperature"
       unit_of_measurement: °C
       accuracy_decimals: 1

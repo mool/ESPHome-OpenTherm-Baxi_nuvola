@@ -25,6 +25,7 @@ public:
   Sensor *boiler_temperature = new Sensor();
   Sensor *return_temperature = new Sensor();
   Sensor *modulation_sensor = new Sensor();
+  Sensor *pressure_sensor = new Sensor();
   Sensor *heating_target_temperature_sensor = new Sensor();
   Sensor *Efault_sensor = new Sensor();
   OpenthermClimate *hotWaterClimate = new OpenthermClimate();
@@ -130,6 +131,7 @@ public:
     float ext_temperature = getExternalTemperature();
     float Efault =  ot.getEFault();
     float modulation = ot.getModulation();
+    float pressure = ot.getPressure();
 
     // Publish sensor values
     flame->publish_state(isFlameOn);
@@ -140,6 +142,7 @@ public:
     return_temperature->publish_state(returnTemperature);
     Efault_sensor->publish_state(Efault);
     modulation_sensor->publish_state(modulation);
+    pressure_sensor->publish_state(pressure);
 
     heating_target_temperature_sensor->publish_state(heating_target_temperature);
 
