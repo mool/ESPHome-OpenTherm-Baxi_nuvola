@@ -49,6 +49,7 @@ sensor:
       OpenthermComponent *openthermComp = (OpenthermComponent*) id(opentherm);
       return {
         openthermComp->boiler_temperature,
+        openthermComp->return_temperature,
         openthermComp->external_temperature_sensor,
         openthermComp->Efault_sensor,
         openthermComp->modulation_sensor,
@@ -56,6 +57,9 @@ sensor:
       };
     sensors:
     - name: Boiler Temperature
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+    - name: Return Temperature
       unit_of_measurement: °C
       accuracy_decimals: 1
     - name: "External Temperature"
@@ -158,9 +162,9 @@ climate:
     default_target_temperature: 20°C
     heat_output: pid_output
     control_parameters:
-      kp: 0.0
-      ki: 0.0
-      kd: 0.0
+      kp: 0.5
+      ki: 0.1
+      kd: 30.0
 
 web_server:
   port: 80

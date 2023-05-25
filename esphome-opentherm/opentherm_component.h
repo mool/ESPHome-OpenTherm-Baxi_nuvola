@@ -23,6 +23,7 @@ public:
   Switch *thermostatSwitch = new OpenthermSwitch();
   Sensor *external_temperature_sensor = new Sensor();
   Sensor *boiler_temperature = new Sensor();
+  Sensor *return_temperature = new Sensor();
   Sensor *modulation_sensor = new Sensor();
   Sensor *heating_target_temperature_sensor = new Sensor();
   Sensor *Efault_sensor = new Sensor();
@@ -60,15 +61,10 @@ public:
       heatingWaterClimate->setup();
   }
 
-
-
-
   float getExternalTemperature() {
       unsigned long response = ot.sendRequest(ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Toutside, 0));
       return ot.isValidResponse(response) ? ot.getFloat(response) : -1;
   }
-
-
 
   float getHotWaterTemperature() {
       unsigned long response = ot.sendRequest(ot.buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Tdhw, 0));
@@ -82,12 +78,7 @@ public:
       return ot.isValidResponse(response);
   }
 
-
-
-
   void update() override {
-
-
     ESP_LOGD("opentherm_component", "update heatingWaterClimate: %i", heatingWaterClimate->mode);
     ESP_LOGD("opentherm_component", "update hotWaterClimate: %i", hotWaterClimate->mode);
 
@@ -106,9 +97,7 @@ public:
     bool isHotWaterActive = ot.isHotWaterActive(response);
     bool isCentralHeating2 = ot.isCentralHeating2Active(response);
 
-
     float hotWater_temperature = getHotWaterTemperature();
-
 
     // Set temperature depending on room thermostat
     float heating_target_temperature;
@@ -137,6 +126,7 @@ public:
     setHotWaterTemperature(hotWaterClimate->target_temperature);
 
     float boilerTemperature = ot.getBoilerTemperature();
+    float returnTemperature = ot.getReturnTemperature();
     float ext_temperature = getExternalTemperature();
     float Efault =  ot.getEFault();
     float modulation = ot.getModulation();
@@ -147,6 +137,7 @@ public:
     fault->publish_state(isFault);
     external_temperature_sensor->publish_state(ext_temperature);
     boiler_temperature->publish_state(boilerTemperature);
+    return_temperature->publish_state(returnTemperature);
     Efault_sensor->publish_state(Efault);
     modulation_sensor->publish_state(modulation);
 
