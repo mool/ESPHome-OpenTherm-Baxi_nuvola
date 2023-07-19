@@ -12,8 +12,6 @@ esp32:
   framework:
     type: arduino
 
-esp32_ble_tracker:
-
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
@@ -78,17 +76,17 @@ sensor:
       unit_of_measurement: °C
       accuracy_decimals: 1
 
-  # - platform: homeassistant
-  #   id: temperature_sensor
-  #   entity_id: sensor.kitchen_t
-  #   name: "Actual temperature"
-  #   unit_of_measurement: °C
-  # - platform: template
-  #   id: temperature_sensor_interval
-  #   name: "Actual temperature interval"
-  #   lambda: |-
-  #     return id(temperature_sensor).state;
-  #   update_interval: 1s
+  - platform: homeassistant
+    id: temperature_sensor
+    entity_id: sensor.lumi_lumi_sens_temperature
+    name: "Actual temperature"
+    unit_of_measurement: °C
+  - platform: template
+    id: temperature_sensor_interval
+    name: "Actual temperature interval"
+    lambda: |-
+      return id(temperature_sensor).state;
+    update_interval: 1s
 
   - platform: pid
     name: "PID Climate Result"
@@ -99,20 +97,6 @@ sensor:
   - platform: pid
     name: "PID Climate ERROR"
     type: ERROR
-
-  - platform: pvvx_mithermometer
-    mac_address: "A4:C1:38:BC:97:AC"
-    temperature:
-      name: "PVVX Temperature"
-      id: pvvx_temperature
-    humidity:
-      name: "PVVX Humidity"
-    battery_level:
-      name: "PVVX Battery-Level"
-    battery_voltage:
-      name: "PVVX Battery-Voltage"
-    signal_strength:
-      name: "PVVX Signal"
 
 binary_sensor:
   - platform: custom
@@ -127,8 +111,6 @@ binary_sensor:
     - name: "Flame"
     - name: "Diagnostic"
     - name: "Fault"
-
-      #device_class: heat
 
 switch:
   - platform: custom
@@ -164,20 +146,15 @@ climate:
       min_temperature: 16 °C
       max_temperature: 28 °C
       temperature_step: 0.5 °C
-    sensor: pvvx_temperature
+    sensor: temperature_sensor_interval
     default_target_temperature: 20°C
     heat_output: pid_output
     control_parameters:
-      kp: 0.49460
-      ki: 0.00487
-      kd: 12.56301
-    deadband_parameters:
-      threshold_high: 0.5°C
-      threshold_low: -1.0°C
-      kp_multiplier: 0.0   # proportional gain turned off inside deadband
-      ki_multiplier: 0.05  # integral accumulates at only 5% of normal ki
-      kd_multiplier: 0.0   # derviative is turned off inside deadband
-      deadband_output_averaging_samples: 15   # average the output over 15 samples within the deadband
+      # autotune
+      kp: 0.31831
+      ki: 0.00001
+      #kd: 1787.38977
+      kd: 20.56301
 
 web_server:
   port: 80
