@@ -109,8 +109,7 @@ public:
     else if (this->pid_output_ != nullptr) {
       float pid_output = pid_output_->get_state();
       if (pid_output == 0.0f) {
-        // heating_target_temperature = 0.0f;
-        heating_target_temperature = 20.0f;
+        heating_target_temperature = 0.0f;
       }
       else {
         heating_target_temperature =  pid_output * (heatingWaterClimate->target_temperature_high - heatingWaterClimate->target_temperature_low)
